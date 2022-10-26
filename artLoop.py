@@ -3,7 +3,6 @@
 
 import os
 import pyqrcode # pip install pyqrcode
-# import png # pip install pypng
 import requests # pip install requests
 import replicate # pip install replicate
 import shutil
@@ -27,35 +26,39 @@ imgurClient = Imgur({
     "account_id": config('ACCOUNT_ID')
 })
 
-# create a new album AT START OF NEW PROMPT STORY
-images = []
-title = 'AI Art'
-description = 'The start of a new prompt story...'
-privacy = 'secret'
-response = imgurClient.album_create(images, title, description, privacy)
-albumID = response['response']['data']['id']
-print(response)
-print("albumID is " + response['response']['data']['id'] + "\n")
+# Encapsulation
+class DataContainer:
+    def __init__(self):
+         self._numPhotos = 0
+         self._albumID = None
+         self._QR = None
 
-# create QR code for the album
-qrCode = pyqrcode.create('https://imgur.com/a/' + albumID)
-qrCode.png('qrCode.png', scale=20)
+    def get_numPhotos(self):
+        return self._numPhotos
 
-# display QR code in tkinter UI
-window = Tk()
-img = PhotoImage(file='qrCode.png')
-Label(window, text="Track the evolution of this prompt story!", font=("Arial", 30)).pack()
-Label(window, image=img, compound='center').pack()
-# window.mainloop() # TODO use mainloop with buttons [submit prompt](add to album) and [new story](make new album) for control loop.
+    def set_numPhotos(self, x):
+        self._numPhotos = x
 
-numPhotos = 0
-while (True):
+    def get_albumID(self):
+        return self._albumID
+
+    def set_albumID(self, x):
+        self._albumID = x
+
+    def set_QR(self, x):
+        self._QR = x
+
+    def get_QR(self):
+        return self._QR
+
+def handleSubmit(dataContainer, numPhotosLabel):
     # TODO replace with webcam openCV string input & a submit button
     parsedPrompt = input("input your prompt: ")
     print(parsedPrompt)
 
+     # generate image and get its link
     print("calling StableDiffusion through Replicate...")
-    model = replicate.models.get("stability-ai/stable-diffusion") # generate image
+    model = replicate.models.get("stability-ai/stable-diffusion")
     imageLink = model.predict(prompt=parsedPrompt)[0]
     if (imageLink):
         print(imageLink)
@@ -73,8 +76,8 @@ while (True):
 
         # upload image to Imgur
         timestamp = datetime.now().strftime("%m/%d/%Y %H:%M:%S")
-        numPhotos += 1
-        description = 'Photo number %d: "%s"\nGenerated '%(numPhotos, parsedPrompt)  + timestamp
+        numPhotos = dataContainer.get_numPhotos() + 1
+        description = 'Photo %d: "%s"\nGenerated '%(numPhotos, parsedPrompt)  + timestamp
         response = imgurClient.image_upload('currPhoto.png', parsedPrompt, description, None, 0)
         print(response)
         # TODO Fault tolerance, maybe try again? See best practice for this
@@ -87,7 +90,7 @@ while (True):
         if (not alreadyFailed):
             photoID = response['response']['data']['id']
             photoLink = response['response']['data']['link']
-            response = imgurClient.album_add(albumID, [photoID])
+            response = imgurClient.album_add(dataContainer.get_albumID(), [photoID])
             print(response)
             # TODO Fault tolerance, maybe try again? See best practice for this
             if (response['status'] != 200):
@@ -98,5 +101,63 @@ while (True):
     else:
         print("error getting generated image")
 
+    dataContainer.set_numPhotos(numPhotos)
+    numPhotosLabel.config(text="Number of photos: %d"%(dataContainer.get_numPhotos()))
+
     # line break before next call
     print()
+
+def handleNewStory(dataContainer, window):
+    # destroy old widgets
+    if (dataContainer.get_numPhotos() != 0 and window):
+        for widget in window.winfo_children():
+            widget.destroy()
+            print('destroying')
+    dataContainer.set_numPhotos(0)
+    dataContainer.set_albumID(None)
+
+    # create a new album AT START OF NEW PROMPT STORY
+    images = []
+    title = 'AI Art'
+    description = 'The start of a new prompt story...'
+    privacy = 'secret'
+    response = imgurClient.album_create(images, title, description, privacy)
+    dataContainer.set_albumID(response['response']['data']['id'])
+    print(response)
+    print("albumID is " + response['response']['data']['id'] + "\n")
+
+    # append albumID links to a txt file for our record keeping
+    albumIDRecord = open("albumIDRecord.txt", "a")
+    albumIDRecord.write("https://imgur.com/a/" + response['response']['data']['id'] + "\n")
+    albumIDRecord.close()
+
+    # create QR code for the album
+    qrCode = pyqrcode.create('https://imgur.com/a/' + dataContainer.get_albumID())
+    print(qrCode)
+    qrCode.png('qrCode.png', scale=20)
+    dataContainer.set_QR(PhotoImage(file='qrCode.png'))
+
+    # Display header, numPhotos, and QR code
+    Label(window, text="Track the evolution of this prompt story!", font=("Arial", 30)).pack()
+    numPhotosLabel = Label(window, text="Number of photos: %d"%(dataContainer.get_numPhotos()), font=("Arial", 12))
+    numPhotosLabel.pack()
+    Label(window, image=dataContainer.get_QR(), compound='center', anchor="n").pack()
+
+    # Display buttons
+    newStoryButton = Button(window, text="New Story", font=("Arial", 24), width=15, padx=20, pady=5, bd=1, fg="white",
+                            bg="#55acee", activeforeground="white", activebackground="green", command=lambda: handleNewStory(dataContainer, window))
+    submitButton = Button(window, text="Submit Prompt", font=("Arial", 24), width=15, padx=20, pady=5, bd=1, fg="white",
+                        bg="#55acee", activeforeground="white", activebackground="green", command=lambda: handleSubmit(dataContainer, numPhotosLabel))
+    newStoryButton.pack(side="left", expand=1, anchor="e", padx=10)
+    submitButton.pack(side="left", expand=1, anchor="w", padx=10)
+
+# TODO further fault tolerance: while loop so that users can't break the exhibit by closing Tkinter window
+while (True):
+    # Initialize Tkinter window & encapsulated data
+    window = Tk()
+    dataContainer = DataContainer()
+    handleNewStory(dataContainer, window)
+
+    # start UI event loop.
+    # Runs until user closes Tkinter window (returns control to while loop, doesn't break program) OR admin kills program.
+    window.mainloop()
