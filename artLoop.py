@@ -29,27 +29,27 @@ imgurClient = Imgur({
 # Encapsulation
 class DataContainer:
     def __init__(self):
-         self._numPhotos = 0
-         self._albumID = None
-         self._QR = None
+         self.__numPhotos = 0
+         self.__albumID = None
+         self.__QR = None
 
     def get_numPhotos(self):
-        return self._numPhotos
+        return self.__numPhotos
 
     def set_numPhotos(self, x):
-        self._numPhotos = x
+        self.__numPhotos = x
 
     def get_albumID(self):
-        return self._albumID
+        return self.__albumID
 
     def set_albumID(self, x):
-        self._albumID = x
+        self.__albumID = x
 
     def set_QR(self, x):
-        self._QR = x
+        self.__QR = x
 
     def get_QR(self):
-        return self._QR
+        return self.__QR
 
 def handleSubmit(dataContainer, numPhotosLabel):
     # TODO replace with webcam openCV string input & a submit button
@@ -152,6 +152,7 @@ def handleNewStory(dataContainer, window):
     submitButton.pack(side="left", expand=1, anchor="w", padx=10)
 
 # TODO further fault tolerance: while loop so that users can't break the exhibit by closing Tkinter window
+# Keyboard interrupt program at CLI then close tkinter to fully exit
 while (True):
     # Initialize Tkinter window & encapsulated data
     window = Tk()
