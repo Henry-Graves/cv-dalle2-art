@@ -1,16 +1,17 @@
 # By Henry Graves
 # AI Art generation demo using Imgur API, Replicate StableDiffusion API
 
+# for initial setup, run "pip install -r pip.txt" at CLI
 import os
-import pyqrcode # pip install pyqrcode
-import requests # pip install requests
-import replicate # pip install replicate
+import pyqrcode
+import requests
+import replicate
 import shutil
 import webbrowser
 from datetime import datetime
-from decouple import config # pip install python-decouple
-from imgur_python import Imgur # pip install imgur-python 
-from PIL import Image # pip install pillow
+from decouple import config
+from imgur_python import Imgur
+from PIL import Image
 from tkinter import *
 
 # Environment variables
@@ -134,7 +135,7 @@ def handleNewStory(dataContainer, window):
     # create QR code for the album
     qrCode = pyqrcode.create('https://imgur.com/a/' + dataContainer.get_albumID())
     print(qrCode)
-    qrCode.png('qrCode.png', scale=20)
+    qrCode.png('qrCode.png', scale=15)
     dataContainer.set_QR(PhotoImage(file='qrCode.png'))
 
     # Display header, numPhotos, and QR code

@@ -1,0 +1,9 @@
+pyqrcode
+requests
+replicate
+imgur-python
+python-decouple
+imgur-python
+pillow
+tk
+pypng
