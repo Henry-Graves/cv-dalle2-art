@@ -27,6 +27,10 @@ imgurClient = Imgur({
     "account_id": config('ACCOUNT_ID')
 })
 
+#For windows we need a link to the executable b/c pip install not enough  
+tess_path = "tesseractInstall/tesseract.exe"
+
+
 # Encapsulation
 class DataContainer:
     def __init__(self):
