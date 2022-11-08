@@ -54,8 +54,9 @@ class DataContainer:
 
 def handleSubmit(dataContainer, numPhotosLabel):
     # TODO replace with webcam openCV string input & a submit button
-    parsedPrompt = input("input your prompt: ")
-    print(parsedPrompt)
+    #parsedPrompt = input("input your prompt: ")
+    parsedPrompt = getUserInputFromNoteCard()
+    print("From the notecard submited, we think the prompt is ", parsedPrompt)
 
      # generate image and get its link
     print("calling StableDiffusion through Replicate...")
@@ -151,6 +152,28 @@ def handleNewStory(dataContainer, window):
                         bg="#55acee", activeforeground="white", activebackground="green", command=lambda: handleSubmit(dataContainer, numPhotosLabel))
     newStoryButton.pack(side="left", expand=1, anchor="e", padx=10)
     submitButton.pack(side="left", expand=1, anchor="w", padx=10)
+
+
+def getUserInputFromNoteCard(): 
+    
+    #yuy
+
+    port = 0 
+    camera = VideoCapture(port)
+
+    result, image = camera.read() 
+
+    textFromImage = ""
+   
+    if result: 
+        imshow("YEET", image)
+        pytesseract.tesseract_cmd = tess_path
+        textFromImage = pytesseract.image_to_string(image)
+        print("Picture found! The string we pulled from it is", textFromImage)
+    else: 
+        print("No image detected, are you sure your webcam is connected?")
+
+    return textFromImage
 
 # TODO further fault tolerance: while loop so that users can't break the exhibit by closing Tkinter window
 # Keyboard interrupt program at CLI then close tkinter to fully exit

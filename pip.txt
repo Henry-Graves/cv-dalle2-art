@@ -7,3 +7,5 @@ imgur-python
 pillow
 tk
 pypng
+opencv-python
+pytesseract
