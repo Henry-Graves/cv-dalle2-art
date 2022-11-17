@@ -13,6 +13,8 @@ from decouple import config
 from imgur_python import Imgur
 from PIL import Image
 from tkinter import *
+from cv2 import VideoCapture, imshow
+import pytesseract 
 
 # Environment variables
 os.environ['REPLICATE_API_TOKEN'] = config('REPLICATE_API_TOKEN')
@@ -28,8 +30,7 @@ imgurClient = Imgur({
 })
 
 #For windows we need a link to the executable b/c pip install not enough  
-tess_path = "tesseractInstall/tesseract.exe"
-
+tess_path = r'C:\Program Files\Tesseract-OCR\tesseract'
 
 # Encapsulation
 class DataContainer:
@@ -171,7 +172,7 @@ def getUserInputFromNoteCard():
    
     if result: 
         imshow("YEET", image)
-        pytesseract.tesseract_cmd = tess_path
+        pytesseract.pytesseract.tesseract_cmd = tess_path
         textFromImage = pytesseract.image_to_string(image)
         print("Picture found! The string we pulled from it is", textFromImage)
     else: 
