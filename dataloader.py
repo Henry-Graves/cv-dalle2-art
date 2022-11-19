@@ -7,8 +7,6 @@ imagePath = r'images'
 
 class DataManager: 
 
-
-
 	def __init__(self): 
 		#Lets pre-emptively load our data 
 		self.labelsDict = self.loadLabels()
@@ -26,7 +24,7 @@ class DataManager:
 		A dicto
 	"""
 
-	def getLabelsDict():
+	def getLabelsDict(self):
 		return self.labelsDict
 
 	def getListOfImages(self):
@@ -44,18 +42,20 @@ class DataManager:
 				print("Error loading data, make sure it exists and is not empty: ", e)
 	
 	def loadImages(self): 
-		listOfImages = []
+		dictOfImages = {}
 		for fileName in os.listdir(imagePath): 
 			
 			if not fileName.startswith("."):
 				#f = str(fileName)
-				print("looking at ", fileName)
+				numChars = len(fileName) - 4
+				index = fileName[:numChars]
+				print("looking at ", fileName[:numChars])
 				path = os.path.join(imagePath, fileName)
-				img = imread(path)
-				self.showImage(img)
-				listOfImages.append(img)
+				img = imread(path, 0)
+				#self.showImage(img)
+				dictOfImages[index] = img
 
-		return listOfImages
+		return dictOfImages
 
 
 	def showImage(self, image):

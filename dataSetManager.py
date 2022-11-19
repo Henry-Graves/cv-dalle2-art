@@ -11,14 +11,11 @@ imagePath = r'images'
  
 
 def main():
-
-    '''
     image = getImage() 
     showImage(image) 
     label = getUserInput()
     makeDataEntry(image, label)
-    '''
-    dm = DataManager()
+
 
     
 
